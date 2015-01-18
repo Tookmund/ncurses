@@ -24,13 +24,6 @@ struct thing blk[NUMBLOCKS];
 struct thing door;
 struct thing* dr = &door;
 
-void updatething(struct thing* t, int x, int y) {
-	mvaddch(t->pos[1],t->pos[0],' ');
-	t->pos[0] += x;
-	t->pos[1] += y;
-	mvaddch(t->pos[1],t->pos[0],t->ico);
-	refresh();
-}
 int overlap(struct thing* t, int ux, int uy,struct thing b[NUMBLOCKS]) {
 	int x = t->pos[0]+ux;
 	int y = t->pos[1]+uy;
@@ -42,6 +35,20 @@ int overlap(struct thing* t, int ux, int uy,struct thing b[NUMBLOCKS]) {
 		}
 	}
 	return 0;
+}
+void updatething(struct thing* t, int x, int y) {
+	int nx = t->pos[0]+x;
+	int ny = t->pos[1]+y;
+	for(int i = 0;i < NUMBLOCKS;i++) {
+		if (blk[i].pos[0] == nx && blk[i].pos[1] == ny) {
+			return;
+		}
+	}
+	mvaddch(t->pos[1],t->pos[0],' ');
+	t->pos[0] += x;
+	t->pos[1] += y;
+	mvaddch(t->pos[1],t->pos[0],t->ico);
+	refresh();
 }
 void end() {
 	printf("Thanks for playing!\n");
@@ -77,17 +84,21 @@ int main () {
 	}
 	ply->ico = cfg[0];
 	dr->ico = cfg[2];
+
+	initscr();
+	cbreak();
+	noecho();
+
 	for (int i = 0; i < NUMBLOCKS; i++) {
 		blk[i].ico = cfg[1];
 		//setup location of blocks while we are at it
-		printf("%d\n%d\n%d\n",rand(),LINES,COLS);
-		blk[i].pos[0] = (int)(rand()/LINES);
-		blk[i].pos[1] = (int)(rand()/COLS);
+		//printf("%d\n%d\n%d\n",rand(),LINES,COLS);
+		blk[i].pos[0] = (int)(rand() % LINES);
+		blk[i].pos[1] = (int)(rand() % COLS);
+		//mvprintw(i,1,"(%d,%d)",blk[i].pos[0],blk[i].pos[1]);
 	}
 	dr->pos[0] = rand()/LINES;
 	dr->pos[1] = rand()/COLS;
-	initscr();
-	cbreak();
 	updatething(ply,COLS/2,LINES/2);
 
 	//draw blocks
@@ -95,8 +106,8 @@ int main () {
 		updatething(&blk[i],0,0);
 	}
 	//setup gravity
-	signal(SIGALRM,gravity);
-	alarm(1);
+	//signal(SIGALRM,gravity);
+	//alarm(1);
 	char inp;
 	for(;;inp=getch()) {
 		switch(inp) {
